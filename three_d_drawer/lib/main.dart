@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 //to set the max slide value
@@ -112,22 +114,53 @@ class _MyHomePageState extends State<MyHomePage>
                   child: Stack(children: [
                     //drawer widget
                     Transform.translate(
-                        /*  initially the drawer is hiden at the left side due to
+                      /*  initially the drawer is hiden at the left side due to
                         dx = -maxSlide= -300
-                        
+
                         when the animation is completed the dx=0
                         again when the animation is reversed the dx=-300
                         for forward animation, animationController.value increases from 0 to 1
                         for reverse animation, animationController.value decreases from 1 to 0
                         */
-                        offset: Offset(
-                            (animationController.value - 1) * maxSlide, 0),
-                        child: DrawerPage()),
+                      offset:
+                          Offset((animationController.value - 1) * maxSlide, 0),
+                      child: Transform(
+                        //together rotation & perspective effect makes it appear
+                        //as if the drawer is sliding from left to right like a book page
+                        transform: Matrix4.identity()
+                          /*Mr. ChatGPT->  The perspective transformation is what 
+                        makes the rotation look more realistic (adding depth) rather than flat.
+                        Matrix4.setEntry(row, column, value) modifies a specific entry in the transformation matrix.
+                        setEntry(3, 2, value) adjusts the perspective effect:
+                        3: Refers to the 4th row of the matrix.
+                        2: Refers to the 3rd column of the matrix.
+                        value (0.001): Determines the strength of the perspective effect.
+                        Smaller values (e.g., 0.001): Stronger depth effect, more dramatic perspective.
+                        Larger values (e.g., 0.01 or higher): Weaker perspective effect, less depth.
+
+                        */
+                          ..setEntry(3, 2, 0.001) //perspective effect
+                          /*
+                        This is the rotation logic that creates the opening/closing effect.
+                        */
+                          ..rotateY(
+                              math.pi / 2 * (1 - animationController.value)),
+                        alignment: Alignment.centerRight,
+                        child: DrawerPage(),
+                      ),
+                      // DrawerPage()
+                    ),
                     //main widget
                     Transform.translate(
                         offset:
                             Offset((animationController.value) * maxSlide, 0),
-                        child: MainPage()),
+                        child: Transform(
+                          transform: Matrix4.identity()
+                            ..setEntry(3, 2, 0.001)
+                            ..rotateY(-math.pi * animationController.value / 2),
+                          alignment: Alignment.centerLeft,
+                          child: MainPage(),
+                        )),
                   ]),
                 );
               },
@@ -145,6 +178,8 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      width: double.infinity,
+      height: double.infinity,
       child: Image.asset('assets/car.png'),
     );
   }
