@@ -15,7 +15,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
+                fontFamily:  "PlaywriteAUSA-Regular",
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
@@ -55,7 +57,9 @@ class _MyHomePageState extends State<MyHomePage>
     animationController.dispose();
     super.dispose();
   }
-
+ void toggle() => animationController.isDismissed
+      ? animationController.forward()
+      : animationController.reverse();
   void _onDragStart(DragStartDetails details) {
     //Returns true if the animation
     // is at the start position (e.g., a drawer is closed).
@@ -96,11 +100,11 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
+    return Scaffold(
         // appBar: AppBar(
         //   title: const Text('3D Effect'),
         // ),
+        backgroundColor: Colors.blueGrey,
         body: Center(
           child: GestureDetector(
             onHorizontalDragStart: _onDragStart,
@@ -111,6 +115,7 @@ class _MyHomePageState extends State<MyHomePage>
               animation: animationController,
               builder: (context, child) {
                 return Material(
+                  color: Colors.blueGrey,
                   child: Stack(children: [
                     //drawer widget
                     Transform.translate(
@@ -161,14 +166,34 @@ class _MyHomePageState extends State<MyHomePage>
                           alignment: Alignment.centerLeft,
                           child: MainPage(),
                         )),
+                          Positioned(
+                  top: 4.0 + MediaQuery.of(context).padding.top,
+                  left: 4.0 + animationController.value * maxSlide,
+                  child: IconButton(
+                    icon: Icon(Icons.menu),
+                    onPressed: toggle,
+                    color: Colors.red,
+                  ),
+                ),
+                Positioned(
+                  top: 16.0 + MediaQuery.of(context).padding.top,
+                  left: animationController.value *
+                      MediaQuery.of(context).size.width,
+                  width: MediaQuery.of(context).size.width,
+                  child: Text(
+                    'Hello Flutter Europe',
+                    // style: Theme.of(context).primaryTextTheme.headlineMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
                   ]),
                 );
               },
             ),
           ),
         ),
-      ),
-    );
+      );
+    
   }
 }
 
@@ -177,10 +202,27 @@ class MainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Scaffold(
+      
+       
+      body:  SizedBox(
+
       width: double.infinity,
       height: double.infinity,
-      child: Image.asset('assets/car.png'),
+      child:
+      
+      Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+       Image.asset('assets/car.png'),
+       SizedBox(height: 50,),
+        Container(
+          child: Text("Mohammad Saqib Wani",style: Theme.of(context).textTheme.headlineMedium!.copyWith(fontWeight: FontWeight.bold),),),
+
+        ],
+      )
+      
+      ),
     );
   }
 }
@@ -203,6 +245,14 @@ class DrawerPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.max,
               children: [
+
+
+                ListTile(
+                  // leading: Icon(),
+                  title: Text('Saqib Wani'),
+                ),
+
+
                 Image.asset(
                   'assets/car.png',
                   width: 200,
