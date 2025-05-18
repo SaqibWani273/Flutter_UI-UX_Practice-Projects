@@ -12,8 +12,10 @@ extension SizeExtensions on double {
 extension DeviceSizeExtensions on BuildContext {
   double get deviceWidth => MediaQuery.sizeOf(this).width;
   double get deviceHeight => MediaQuery.sizeOf(this).height;
+  double get drawerWidth => deviceWidth * 0.5;
 }
 
 extension IconsExtensions on Icon {
   Icon get medium => Icon(icon, size: 28.0, color: color);
+  Icon get small => Icon(icon, size: 24.0, color: color);
 }

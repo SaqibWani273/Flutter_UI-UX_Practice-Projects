@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:food_app/core/app_colors.dart';
 import 'package:food_app/core/app_sizes.dart';
 import 'package:food_app/core/extensions.dart';
+import 'package:food_app/view/food_info.dart';
 
 class FoodHome extends StatefulWidget {
-  const FoodHome({super.key});
+  final Widget drawerWidget;
+  const FoodHome({super.key, required this.drawerWidget});
 
   @override
   State<FoodHome> createState() => _FoodHomeState();
@@ -13,6 +16,7 @@ class FoodHome extends StatefulWidget {
 class _FoodHomeState extends State<FoodHome>
     with SingleTickerProviderStateMixin {
   late TabController _controller;
+  bool isDrawerOpen = false;
 
   @override
   void initState() {
@@ -26,132 +30,201 @@ class _FoodHomeState extends State<FoodHome>
     super.dispose();
   }
 
+  openDrawer() {
+    setState(() {
+      isDrawerOpen = !isDrawerOpen;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar:
+          isDrawerOpen
+              ? AppBar(
+                elevation: 0,
+                systemOverlayStyle: const SystemUiOverlayStyle(
+                  statusBarColor: AppColors.primaryColor,
+                  statusBarIconBrightness: Brightness.light,
+                ),
+              )
+              : null,
       body: SafeArea(
-        child: SizedBox(
-          width: context.deviceWidth,
+        bottom: false,
+        child: Stack(
+          children: [
+            widget.drawerWidget,
+            Positioned(
+              top: isDrawerOpen ? AppSizes.xLargeHeight.height : null,
+              bottom: isDrawerOpen ? AppSizes.xLargeHeight.height : null,
+              left: isDrawerOpen ? context.drawerWidth : null,
+              child: Container(
+                decoration:
+                    isDrawerOpen
+                        ? BoxDecoration(
+                          color: AppColors.lightGrey.withAlpha(50),
+                          borderRadius: BorderRadius.circular(40.0),
+                        )
+                        : null,
+                padding:
+                    isDrawerOpen
+                        ? EdgeInsets.only(
+                          left: AppSizes.largeWidth.width!,
+                          top: 10,
+                          bottom: AppSizes.xLargeHeight.height!,
+                        )
+                        : null,
+                child: Container(
+                  width: context.deviceWidth,
+                  height:
+                      isDrawerOpen
+                          ? context.deviceHeight -
+                              AppSizes.xLargeHeight.height! * 2
+                          : null,
+                  decoration: BoxDecoration(
+                    color: AppColors.scaffoldBackgroundColor,
+                    // color: Colors.red,
+                    borderRadius:
+                        isDrawerOpen ? BorderRadius.circular(40.0) : null,
+                  ),
 
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 20.0,
-            children: <Widget>[
-              Expanded(
-                flex: 2,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
                   child: Column(
-                    spacing: 20.0,
-
+                    mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          GestureDetector(child: const Icon(Icons.menu_open)),
-                          Spacer(),
-                          GestureDetector(
-                            child: const Icon(
-                              Icons.shopping_cart_checkout,
-                              color: AppColors.textGrey,
-                            ),
-                          ),
-                        ],
-                      ),
+                    spacing: isDrawerOpen ? 10 : 20.0,
+                    children: <Widget>[
+                      if (!isDrawerOpen) AppSizes.largeHeight,
+                      if (isDrawerOpen) AppSizes.xSmallHeight,
+                      Expanded(
+                        flex: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 40),
+                          child: Column(
+                            spacing: 20.0,
 
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Delicious\n food for you',
-                              style: context.th.bodyLarge,
-                            ),
-                          ),
-                        ],
-                      ),
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: openDrawer,
+                                    child: const Icon(Icons.menu_open),
+                                  ),
+                                  Spacer(),
+                                  GestureDetector(
+                                    child: const Icon(
+                                      Icons.shopping_cart_checkout,
+                                      color: AppColors.textGrey,
+                                    ),
+                                  ),
+                                ],
+                              ),
 
-                      // Text('Delicious food for you', style: context.th.bodyMedium),
-                      TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Search',
-                          prefixIcon:
-                              const Icon(
-                                Icons.search,
-                                color: Colors.black,
-                              ).medium,
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'Delicious\n food for you',
+                                      style:
+                                          isDrawerOpen
+                                              ? context.th.bodyMedium
+                                              : context.th.bodyLarge,
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              // Text('Delicious food for you', style: context.th.bodyMedium),
+                              TextField(
+                                decoration: InputDecoration(
+                                  hintText: 'Search',
+                                  prefixIcon:
+                                      const Icon(
+                                        Icons.search,
+                                        color: Colors.black,
+                                      ).medium,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 20),
+                        child: TabBar(
+                          labelStyle: context.th.bodyMedium?.copyWith(
+                            color: AppColors.primaryColor,
+                          ),
+                          unselectedLabelStyle: context.th.bodyMedium?.copyWith(
+                            color: AppColors.textGrey,
+                          ),
+
+                          controller: _controller,
+                          // isScrollable: true,
+                          indicatorColor: Colors.deepOrange,
+                          indicatorWeight: 4,
+                          tabs: const [
+                            Tab(text: 'Foods'),
+                            Tab(text: 'Drinks'),
+                            Tab(text: 'Sauces'),
+                            Tab(text: 'Sancks'),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        flex: isDrawerOpen ? 3 : 4,
+                        child: TabBarView(
+                          controller: _controller,
+                          children: [
+                            FoodsTab(isDrawerOpen: isDrawerOpen),
+                            Center(child: Text('Drinks')),
+                            Center(child: Text('Sauces')),
+                            Center(child: Text('Snacks')),
+                          ],
+                        ),
+                      ),
+
+                      BottomNavigationBar(
+                        backgroundColor: AppColors.scaffoldBackgroundColor,
+                        selectedItemColor: AppColors.primaryColor,
+                        iconSize: 30,
+                        unselectedItemColor: AppColors.textGrey,
+                        items: [
+                          BottomNavigationBarItem(
+                            backgroundColor:
+                                Theme.of(context).scaffoldBackgroundColor,
+                            icon: Icon(Icons.home_filled),
+                            label: "",
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.favorite_outline_sharp),
+                            label: "",
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.person_outlined),
+                            label: "",
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.history_outlined),
+                            label: "",
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: TabBar(
-                  labelStyle: context.th.bodyMedium?.copyWith(
-                    color: AppColors.primaryColor,
-                  ),
-                  unselectedLabelStyle: context.th.bodyMedium?.copyWith(
-                    color: AppColors.textGrey,
-                  ),
-
-                  controller: _controller,
-                  // isScrollable: true,
-                  indicatorColor: Colors.deepOrange,
-                  indicatorWeight: 4,
-                  tabs: const [
-                    Tab(text: 'Foods'),
-                    Tab(text: 'Drinks'),
-                    Tab(text: 'Sauces'),
-                    Tab(text: 'Sancks'),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 4,
-                child: TabBarView(
-                  controller: _controller,
-                  children: const [
-                    FoodsTab(),
-                    Center(child: Text('Drinks')),
-                    Center(child: Text('Sauces')),
-                    Center(child: Text('Snacks')),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ),
-
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: AppColors.primaryColor,
-        iconSize: 30,
-        unselectedItemColor: AppColors.textGrey,
-        items: [
-          BottomNavigationBarItem(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            icon: Icon(Icons.home_filled),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_outline_sharp),
-            label: "",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outlined), label: ""),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_outlined),
-            label: "",
-          ),
-        ],
       ),
     );
   }
 }
 
 class FoodsTab extends StatefulWidget {
-  const FoodsTab({super.key});
+  final bool isDrawerOpen;
+  const FoodsTab({super.key, this.isDrawerOpen = false});
 
   @override
   State<FoodsTab> createState() => _FoodsTabState();
@@ -162,19 +235,21 @@ class _FoodsTabState extends State<FoodsTab> {
   Widget build(BuildContext context) {
     return Column(
       // spacing: 20.0,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Padding(
-          padding: EdgeInsets.only(left: context.deviceWidth * 0.5),
-          child: GestureDetector(
-            onTap: () {},
-            child: Text(
-              "see more",
-              style: context.th.bodyMedium?.copyWith(
-                color: AppColors.primaryColor,
+        if (!widget.isDrawerOpen)
+          Padding(
+            padding: EdgeInsets.only(left: context.deviceWidth * 0.5),
+            child: GestureDetector(
+              onTap: () {},
+              child: Text(
+                "see more",
+                style: context.th.bodyMedium?.copyWith(
+                  color: AppColors.primaryColor,
+                ),
               ),
             ),
           ),
-        ),
 
         ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(overscroll: false),
@@ -185,57 +260,89 @@ class _FoodsTabState extends State<FoodsTab> {
               mainAxisAlignment: MainAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: List.generate(5, (index) {
-                return SizedBox(
-                  height: context.deviceHeight * 0.45,
-                  width: context.deviceHeight * 0.3,
-                  child: Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      Positioned(
-                        top: context.deviceHeight * 0.07,
-                        child: Card(
-                          elevation: 30.0,
+                return GestureDetector(
+                  onTap:
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => FoodInfo(foodModel: foodList[0]),
+                        ),
+                      ),
+                  child: SizedBox(
+                    // height: context.deviceHeight * 0.45,
+                    height:
+                        widget.isDrawerOpen
+                            ? context.deviceHeight * 0.3
+                            : context.deviceHeight * 0.435,
+                    width:
+                        widget.isDrawerOpen
+                            ? context.deviceWidth * 0.5
+                            : context.deviceWidth * 0.65,
+                    child: Stack(
+                      alignment: Alignment.topCenter,
+                      children: [
+                        Positioned(
+                          top:
+                              widget.isDrawerOpen
+                                  ? context.deviceHeight * 0.05
+                                  : context.deviceHeight * 0.07,
+                          child: Card(
+                            elevation: 30.0,
 
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(40),
-                          ),
-                          shadowColor: Colors.grey.shade50.withAlpha(150),
-                          child: Container(
-                            width: context.deviceWidth * 0.55,
-                            height: context.deviceHeight * 0.3,
-                            padding: EdgeInsets.only(bottom: 40),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(40),
+                            ),
+                            shadowColor: AppColors.lightShadowColor,
+                            child: Container(
+                              width:
+                                  widget.isDrawerOpen
+                                      ? context.deviceWidth * 0.35
+                                      : context.deviceWidth * 0.55,
+                              height:
+                                  widget.isDrawerOpen
+                                      ? context.deviceHeight * 0.2
+                                      : context.deviceHeight * 0.3,
+                              padding: EdgeInsets.only(bottom: 40),
 
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 40),
-                                  child: Text(
-                                    'Veggie tomato mix',
-                                    textAlign: TextAlign.center,
-                                    style: context.th.bodyMedium,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 40,
+                                    ),
+                                    child: Text(
+                                      'Veggie tomato mix',
+                                      textAlign: TextAlign.center,
+                                      style: context.th.bodyMedium,
+                                    ),
                                   ),
-                                ),
-                                AppSizes.medium,
-                                Text(
-                                  '₹120.00',
-                                  style: context.th.bodyMedium?.copyWith(
-                                    color: AppColors.primaryColor,
+                                  AppSizes.mediumHeight,
+                                  Text(
+                                    '₹120.00',
+                                    style: context.th.bodyMedium?.copyWith(
+                                      color: AppColors.primaryColor,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Positioned(
-                        child: Image.asset(
-                          width: context.deviceWidth * 0.55,
-                          'assets/images/food_img6.png',
-                          fit: BoxFit.contain,
+                        Positioned(
+                          child: Image.asset(
+                            width: context.deviceWidth * 0.52,
+                            height:
+                                widget.isDrawerOpen
+                                    ? context.deviceHeight * 0.1
+                                    : null,
+                            'assets/images/plate_with_shadow.png',
+                            fit: BoxFit.contain,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               }),
@@ -246,3 +353,34 @@ class _FoodsTabState extends State<FoodsTab> {
     );
   }
 }
+
+final List<FoodModel> foodList = [
+  FoodModel(
+    images: [
+      'assets/images/plate_with_shadow.png',
+      'assets/images/plate_with_shadow.png',
+      'assets/images/plate_with_shadow.png',
+    ],
+    title: 'Veggie tomato mix',
+    price: '₹120.00',
+    deleiveryInfo: "Delivered between 10:00 AM - 12:00 PM",
+    returnPolicy:
+        "All foods are double checked to make sure they are fresh and safe.If you are not satisfied with the food, you can return it within 30 days.",
+    description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  ),
+  FoodModel(
+    images: [
+      'assets/images/plate_with_shadow.png',
+      'assets/images/plate_with_shadow.png',
+      'assets/images/plate_with_shadow.png',
+    ],
+    title: 'Veggie tomato mix',
+    price: '₹120.00',
+    deleiveryInfo: "Delivered between 10:00 AM - 12:00 PM",
+    returnPolicy:
+        "All foods are double checked to make sure they are fresh and safe.If you are not satisfied with the food, you can return it within 30 days.",
+    description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  ),
+];
