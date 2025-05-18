@@ -16,5 +16,5 @@ class AppSizes {
   static SizedBox largeWidth = 20.0.w;
   static SizedBox xLargeWidth = 50.0.w;
   static SizedBox xxLargeWidth = 100.0.w;
-  static double drawerLeftPdding = 15.0;
+  static double drawerLeftPdding = 10.0;
 }

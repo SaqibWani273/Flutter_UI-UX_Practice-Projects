@@ -41,7 +41,6 @@ class FoodDrawer extends StatelessWidget {
       backgroundColor: AppColors.primaryColor,
       body: Container(
         width: context.drawerWidth,
-        // color: const Color.fromARGB(255, 225, 70, 22),
         padding: EdgeInsets.only(
           left: AppSizes.drawerLeftPdding,
           right: 20,
