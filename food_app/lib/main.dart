@@ -38,6 +38,13 @@ class FoodDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: AppColors.primaryColor,
+          statusBarIconBrightness: Brightness.light,
+        ),
+      ),
       backgroundColor: AppColors.primaryColor,
       body: Container(
         width: context.drawerWidth,

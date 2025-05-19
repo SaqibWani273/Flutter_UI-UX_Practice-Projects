@@ -15,68 +15,109 @@ class FoodHome extends StatefulWidget {
 
 class _FoodHomeState extends State<FoodHome>
     with SingleTickerProviderStateMixin {
-  late TabController _controller;
+  late final AnimationController _animationController;
   bool isDrawerOpen = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = TabController(length: 4, vsync: this);
-  }
+  // Controls the X/Y offset and scale of the main screen
+  double xOffset = 0;
+  double yOffset = 0;
+  double scaleFactor = 1;
+
+  Duration duration = const Duration(milliseconds: 300);
 
   @override
   void dispose() {
-    _controller.dispose();
     super.dispose();
+    _animationController.dispose();
   }
 
-  openDrawer() {
+  void openDrawer() {
     setState(() {
-      isDrawerOpen = !isDrawerOpen;
+      xOffset = context.drawerWidth;
+      yOffset = AppSizes.xLargeHeight.height! * 3;
+      scaleFactor = 0.75;
+      isDrawerOpen = true;
+    });
+  }
+
+  void closeDrawer() {
+    setState(() {
+      xOffset = 0;
+      yOffset = 0;
+      scaleFactor = 1;
+      isDrawerOpen = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-          isDrawerOpen
-              ? AppBar(
-                elevation: 0,
-                systemOverlayStyle: const SystemUiOverlayStyle(
-                  statusBarColor: AppColors.primaryColor,
-                  statusBarIconBrightness: Brightness.light,
-                ),
-              )
-              : null,
       body: SafeArea(
         bottom: false,
+        top: false,
         child: Stack(
           children: [
             widget.drawerWidget,
-            Positioned(
-              top: isDrawerOpen ? AppSizes.xLargeHeight.height : 0,
-              bottom: isDrawerOpen ? AppSizes.xLargeHeight.height : 0,
-              left: isDrawerOpen ? context.drawerWidth : 0,
-              child: Container(
-                decoration:
+            AnimatedContainer(
+              duration: duration,
+              transform: Matrix4.translationValues(xOffset, yOffset, 0)
+                ..scale(scaleFactor),
+              clipBehavior: Clip.antiAlias,
+              padding:
+                  isDrawerOpen
+                      ? EdgeInsets.only(left: 30, top: 20, bottom: 20)
+                      : EdgeInsets.zero,
+              decoration: BoxDecoration(
+                color: AppColors.lightGrey.withAlpha(50),
+                borderRadius:
                     isDrawerOpen
-                        ? BoxDecoration(
-                          color: AppColors.lightGrey.withAlpha(50),
-                          borderRadius: BorderRadius.circular(40.0),
-                        )
-                        : null,
-                padding:
-                    isDrawerOpen
-                        ? EdgeInsets.only(
-                          left: AppSizes.largeWidth.width!,
-                          top: 10,
-                          bottom: 10,
-                        )
-                        : null,
-                child: FoodHomeWidget(
-                  isDrawerOpen: isDrawerOpen,
-                  openDrawer: openDrawer, // Pass the function to the widget
+                        ? BorderRadius.circular(30)
+                        : BorderRadius.circular(0),
+              ),
+
+              child: GestureDetector(
+                onTap: isDrawerOpen ? closeDrawer : null,
+                child: AbsorbPointer(
+                  absorbing: isDrawerOpen,
+
+                  child: Container(
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      borderRadius:
+                          isDrawerOpen ? BorderRadius.circular(30) : null,
+                    ),
+                    child: Scaffold(
+                      appBar: AppBar(
+                        backgroundColor: AppColors.scaffoldBackgroundColor,
+                        elevation: 0,
+                        systemOverlayStyle: SystemUiOverlayStyle(
+                          statusBarColor: AppColors.scaffoldBackgroundColor,
+                          statusBarIconBrightness: Brightness.dark,
+                        ),
+                        title: Row(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                isDrawerOpen ? closeDrawer() : openDrawer();
+                              },
+                              child: const Icon(
+                                Icons.menu_open,
+                                color: Colors.black,
+                              ),
+                            ),
+                            Spacer(),
+                            GestureDetector(
+                              child: const Icon(
+                                Icons.shopping_cart_checkout,
+                                color: AppColors.textGrey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      body: FoodHomeWidget(isDrawerOpen: isDrawerOpen),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -89,12 +130,12 @@ class _FoodHomeState extends State<FoodHome>
 
 class FoodHomeWidget extends StatefulWidget {
   final bool isDrawerOpen;
-  final VoidCallback openDrawer;
+  // final VoidCallback toggleDrawer;
 
   const FoodHomeWidget({
     super.key,
     required this.isDrawerOpen,
-    required this.openDrawer,
+    // required this.toggleDrawer,
   });
 
   @override
@@ -119,7 +160,6 @@ class _FoodHomeWidgetState extends State<FoodHomeWidget>
 
           decoration: BoxDecoration(
             color: AppColors.scaffoldBackgroundColor,
-            // color: Colors.red,
             borderRadius:
                 widget.isDrawerOpen ? BorderRadius.circular(40.0) : null,
           ),
@@ -127,10 +167,10 @@ class _FoodHomeWidgetState extends State<FoodHomeWidget>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: widget.isDrawerOpen ? 10 : 20.0,
+            // spacing: widget.isDrawerOpen ? 10 : 20.0,
+            spacing: 20.0,
             children: <Widget>[
-              if (!widget.isDrawerOpen) AppSizes.largeHeight,
-              if (widget.isDrawerOpen) AppSizes.xSmallHeight,
+              AppSizes.smallHeight,
               Expanded(
                 flex: 2,
                 child: Padding(
@@ -139,23 +179,8 @@ class _FoodHomeWidgetState extends State<FoodHomeWidget>
                     spacing: 20.0,
 
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          GestureDetector(
-                            onTap: widget.openDrawer,
-                            child: const Icon(Icons.menu_open),
-                          ),
-                          Spacer(),
-                          GestureDetector(
-                            child: const Icon(
-                              Icons.shopping_cart_checkout,
-                              color: AppColors.textGrey,
-                            ),
-                          ),
-                        ],
-                      ),
-
                       Row(
                         children: [
                           Expanded(
@@ -208,7 +233,7 @@ class _FoodHomeWidgetState extends State<FoodHomeWidget>
                 ),
               ),
               Expanded(
-                flex: widget.isDrawerOpen ? 3 : 4,
+                flex: 4, // widget.isDrawerOpen ? 3 : 4,
                 child: TabBarView(
                   controller: _controller,
                   children: [
@@ -221,10 +246,7 @@ class _FoodHomeWidgetState extends State<FoodHomeWidget>
               ),
 
               ClipRRect(
-                borderRadius:
-                    widget.isDrawerOpen
-                        ? BorderRadius.circular(40)
-                        : BorderRadius.zero,
+                borderRadius: BorderRadius.circular(40),
 
                 child: BottomNavigationBar(
                   backgroundColor: AppColors.scaffoldBackgroundColor,
@@ -313,17 +335,15 @@ class _FoodsTabState extends State<FoodsTab> {
                               ),
                             ),
                         child: SizedBox(
-                          width:
-                              widget.isDrawerOpen
-                                  ? context.deviceWidth * 0.5
-                                  : context.deviceWidth * 0.65,
+                          width: context.deviceWidth * 0.65,
+
                           child: Stack(
                             alignment: Alignment.topCenter,
                             children: [
                               Positioned(
                                 top: 60,
                                 bottom: widget.isDrawerOpen ? 40 : 60,
-                                left: widget.isDrawerOpen ? 10 : null,
+                                left: widget.isDrawerOpen ? 15 : null,
                                 right: widget.isDrawerOpen ? 10 : null,
 
                                 child: Card(
@@ -365,10 +385,7 @@ class _FoodsTabState extends State<FoodsTab> {
                               Positioned(
                                 top: 0,
                                 child: Image.asset(
-                                  width:
-                                      widget.isDrawerOpen
-                                          ? context.deviceWidth * 0.4
-                                          : context.deviceWidth * 0.52,
+                                  width: context.deviceWidth * 0.52,
 
                                   'assets/images/plate_with_shadow.png',
                                   fit: BoxFit.contain,
