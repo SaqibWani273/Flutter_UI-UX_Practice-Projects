@@ -1,8 +1,8 @@
-Hair Salon UI 
+# 🍔 Flutter Food App UI with Animations
 
-  https://github.com/SaqibWani273/Flutter_UI-UX_Practice-Projects/assets/60820219/b3da356f-6135-448f-9d64-bd54f2ef76d9
+![Frame 2 (2)](https://github.com/user-attachments/assets/43aab168-f46a-40dd-a65b-77fddbf199e4)
 
-  Expenses Stastistics page 
+#  Expenses Stastistics page 
   
   ![assignment](https://github.com/SaqibWani273/Flutter_UI-UX_Practice-Projects/assets/60820219/aa8fe370-1f1c-45d2-90ac-9a3f1a7f9b78) 
 
