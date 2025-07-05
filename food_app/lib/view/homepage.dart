@@ -5,6 +5,8 @@ import 'package:food_app/core/app_sizes.dart';
 import 'package:food_app/core/extensions.dart';
 import 'package:food_app/view/food_info.dart';
 
+import '../core/navigation.dart';
+
 class FoodHome extends StatefulWidget {
   final Widget drawerWidget;
   const FoodHome({super.key, required this.drawerWidget});
@@ -13,9 +15,7 @@ class FoodHome extends StatefulWidget {
   State<FoodHome> createState() => _FoodHomeState();
 }
 
-class _FoodHomeState extends State<FoodHome>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _animationController;
+class _FoodHomeState extends State<FoodHome> {
   bool isDrawerOpen = false;
 
   // Controls the X/Y offset and scale of the main screen
@@ -24,12 +24,6 @@ class _FoodHomeState extends State<FoodHome>
   double scaleFactor = 1;
 
   Duration duration = const Duration(milliseconds: 300);
-
-  @override
-  void dispose() {
-    super.dispose();
-    _animationController.dispose();
-  }
 
   void openDrawer() {
     setState(() {
@@ -59,6 +53,7 @@ class _FoodHomeState extends State<FoodHome>
           children: [
             widget.drawerWidget,
             AnimatedContainer(
+              curve: Curves.easeOut,
               duration: duration,
               transform: Matrix4.translationValues(xOffset, yOffset, 0)
                 ..scale(scaleFactor),
@@ -109,7 +104,7 @@ class _FoodHomeState extends State<FoodHome>
                             GestureDetector(
                               child: const Icon(
                                 Icons.shopping_cart_checkout,
-                                color: AppColors.textGrey,
+                                color: AppColors.dark,
                               ),
                             ),
                           ],
@@ -291,7 +286,34 @@ class FoodsTab extends StatefulWidget {
   State<FoodsTab> createState() => _FoodsTabState();
 }
 
-class _FoodsTabState extends State<FoodsTab> {
+class _FoodsTabState extends State<FoodsTab>
+    with SingleTickerProviderStateMixin {
+  late ScrollController _scrollController;
+  double scrollOffset = 0.0;
+  late AnimationController _controller;
+  late final Animation<double> _rotationAnimation;
+
+  @override
+  void initState() {
+    _controller = AnimationController(duration: duration3, vsync: this)
+      ..forward();
+    _rotationAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    );
+    _scrollController =
+        ScrollController()..addListener(() {
+          _controller.forward(from: 0.3);
+        });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -319,20 +341,19 @@ class _FoodsTabState extends State<FoodsTab> {
                 ).copyWith(overscroll: false),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
+                  controller: _scrollController,
 
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     mainAxisSize: MainAxisSize.min,
-                    children: List.generate(5, (index) {
+                    children: List.generate(foodList.length, (index) {
                       return GestureDetector(
                         onTap:
-                            () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) =>
-                                        FoodInfo(foodModel: foodList[0]),
-                              ),
+                            () => TransitionNavigation.push(
+                              transitionType: TransitionType.slideup,
+                              context: context,
+                              curve: Curves.easeOut,
+                              page: FoodInfo(foodModel: foodList[index]),
                             ),
                         child: SizedBox(
                           width: context.deviceWidth * 0.65,
@@ -384,11 +405,38 @@ class _FoodsTabState extends State<FoodsTab> {
                               ),
                               Positioned(
                                 top: 0,
-                                child: Image.asset(
-                                  width: context.deviceWidth * 0.52,
 
-                                  'assets/images/plate_with_shadow.png',
-                                  fit: BoxFit.contain,
+                                child: AnimatedBuilder(
+                                  animation: _rotationAnimation,
+
+                                  // duration: const Duration(milliseconds: 300),
+                                  // curve: Curves.easeInOut,
+                                  // tween: Tween<double>(
+                                  //   begin: 0,
+                                  //   end: (scrollOffset * 0.09).clamp(
+                                  //     -0.5,
+                                  //     0.5,
+                                  //   ), // Larger multiplier
+                                  // ),
+                                  builder: (context, child) {
+                                    return Transform.rotate(
+                                      angle:
+                                          _rotationAnimation.value *
+                                          2 *
+                                          3.14, // Rotate the image
+                                      child: child,
+                                    );
+                                  },
+                                  child: Hero(
+                                    tag:
+                                        foodList[index].images[0] +
+                                        foodList[index].id,
+                                    child: Image.asset(
+                                      width: context.deviceWidth * 0.52,
+                                      foodList[index].images[0],
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -409,10 +457,13 @@ class _FoodsTabState extends State<FoodsTab> {
 
 final List<FoodModel> foodList = [
   FoodModel(
+    id: UniqueKey().toString(),
+
     images: [
       'assets/images/plate_with_shadow.png',
-      'assets/images/plate_with_shadow.png',
-      'assets/images/plate_with_shadow.png',
+
+      // 'assets/images/plate_with_shadow.png',
+      // 'assets/images/plate_with_shadow.png',
     ],
     title: 'Veggie tomato mix',
     price: '₹120.00',
@@ -423,12 +474,43 @@ final List<FoodModel> foodList = [
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
   ),
   FoodModel(
+    id: UniqueKey().toString(),
     images: [
       'assets/images/plate_with_shadow.png',
-      'assets/images/plate_with_shadow.png',
-      'assets/images/plate_with_shadow.png',
+      // 'assets/images/plate_with_shadow.png',
+      // 'assets/images/plate_with_shadow.png',
     ],
-    title: 'Veggie tomato mix',
+    title: 'Chicken Salad',
+    price: '₹120.00',
+    deleiveryInfo: "Delivered between 10:00 AM - 12:00 PM",
+    returnPolicy:
+        "All foods are double checked to make sure they are fresh and safe.If you are not satisfied with the food, you can return it within 30 days.",
+    description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  ),
+  FoodModel(
+    id: UniqueKey().toString(),
+    images: [
+      'assets/images/plate_with_shadow.png',
+      // 'assets/images/plate_with_shadow.png',
+      // 'assets/images/plate_with_shadow.png',
+    ],
+    title: 'Chicken Salad',
+    price: '₹120.00',
+    deleiveryInfo: "Delivered between 10:00 AM - 12:00 PM",
+    returnPolicy:
+        "All foods are double checked to make sure they are fresh and safe.If you are not satisfied with the food, you can return it within 30 days.",
+    description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  ),
+  FoodModel(
+    id: UniqueKey().toString(),
+    images: [
+      'assets/images/plate_with_shadow.png',
+      // 'assets/images/plate_with_shadow.png',
+      // 'assets/images/plate_with_shadow.png',
+    ],
+    title: 'Chicken Salad',
     price: '₹120.00',
     deleiveryInfo: "Delivered between 10:00 AM - 12:00 PM",
     returnPolicy:

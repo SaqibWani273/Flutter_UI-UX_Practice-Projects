@@ -5,6 +5,7 @@ import 'app_colors.dart';
 
 class AppTheme {
   static ThemeData appThemeData = ThemeData(
+    splashColor: AppColors.primaryColor,
     useMaterial3: false,
     scaffoldBackgroundColor: AppColors.scaffoldBackgroundColor,
     inputDecorationTheme: InputDecorationTheme(
