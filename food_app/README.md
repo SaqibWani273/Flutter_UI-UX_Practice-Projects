@@ -1,8 +1,5 @@
-
-
-![food_app_figma_ss](https://github.com/user-attachments/assets/f7e03b2c-f409-45c6-9935-1b9b475d342b)
-
 # 🍔 Flutter Food App UI with Animations
+![Frame 2 (1)](https://github.com/user-attachments/assets/cdbf15a1-2771-4b3d-b7e0-2dab79292ad9)
 
 This is a Flutter-based food app UI where I tried to replicate this [Dribble Design]( https://dribbble.com/shots/16648056-Food-app-UI-animation) with smooth animations and transitions, inspired by a real-world mobile experience. The project focuses heavily on animation and motion to bring the UI to life.
 
